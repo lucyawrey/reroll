@@ -1,6 +1,6 @@
 import { MessageDocument } from "types/documents";
 import { Dispatch, DispatchEvent, GameState, HostPriorityQueue } from "types/reroll/play";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { GameServer } from "client/play";
 
 /**

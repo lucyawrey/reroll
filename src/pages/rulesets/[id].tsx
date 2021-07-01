@@ -8,7 +8,7 @@ import { Button, Card, Col, FormGroup, FormLabel, Row } from "react-bootstrap";
 import { MdBlock, MdBuild, MdInfo } from "react-icons/md";
 import { TableComponentProps } from "types/design";
 import { ContextMenuBuilder, TableBuilder } from "utilities/design";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import * as Yup from "yup";
 
 interface FetchContentTypeData {

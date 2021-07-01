@@ -5,7 +5,7 @@ import { Button, Card} from "react-bootstrap";
 import { CampaignDocument } from "types/documents";
 import { getSession, signOut } from "utilities/auth";
 import { NextPage, NextPageContext } from "next";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { Col, Row } from "components/style";
 
 interface DashboardProps {

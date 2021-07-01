@@ -1,5 +1,8 @@
 import fetch from "cross-fetch";
+import { HTTPHandler } from "server/response";
+import { MainHTTPHandler } from "server/utilities";
 import { ServerResponse } from "types/utilities";
+import { isClient } from "./tools";
 
 // The default request initialization.
 const defaultRequestInit: RequestInit = {
@@ -12,20 +15,6 @@ const defaultRequestInit: RequestInit = {
   redirect: "follow",
   referrerPolicy: "no-referrer",
 };
-
-// TODO - load in from env variable
-const thisDomain = "http://localhost:3000";
-
-/**
- * Formats the URL. Serverside requests require an absolute URL; this adds it 
- * if the environment variable is set
- * @param url The url to format properly
- */
-function formatURL(url: string) {
-  if (typeof window !== "undefined") { return url; }
-  if (url.charAt(0) === "/") { return thisDomain + url; }
-  return url;
-}
 
 /**
  * Converts an object into URI parameters
@@ -40,7 +29,7 @@ export function toURLParams(data?: Record<string, string | unknown>): string {
 
   keys.forEach((key: string) => {
     if (data[key] === undefined || data[key] === "") { return; }
-    urlParams += `${key}=${data[key]}&`
+    urlParams += `${key}=${data[key]}&`;
   });
   if (urlParams === "?") { return ""; }
 
@@ -57,12 +46,16 @@ async function get<T>(
   data?: Record<string, string>,
   requestInit: RequestInit = defaultRequestInit
 ): Promise<ServerResponse<T>> {
-  requestInit.body = undefined;
-  requestInit.method = "GET";
-  // TODO - convert data to url params
-  const urlParams = toURLParams(data);
-  const response = await fetch(formatURL(url + urlParams), requestInit);
-  return response.json(); // parses JSON response into native JavaScript objects
+  if (isClient) {
+    requestInit.body = undefined;
+    requestInit.method = "GET";
+    // TODO - convert data to url params
+    const urlParams = toURLParams(data);
+    const response = await fetch(url + urlParams, requestInit);
+    return response.json(); // parses JSON response into native JavaScript objects
+  } else {
+    return createServerPromise(url, data);
+  }
 }
 
 /**
@@ -135,18 +128,31 @@ async function postlike<T>(
   url: string,
   data: Record<string, unknown>,
   requestInit: RequestInit = defaultRequestInit
-):Promise<ServerResponse<T>> {
-  requestInit.body = JSON.stringify(data);
-  const response = await fetch(formatURL(url), requestInit);
-  return response.json(); // parses JSON response into native JavaScript objects
+): Promise<ServerResponse<T>> {
+  if (isClient) {
+    requestInit.body = JSON.stringify(data);
+    const response = await fetch(url, requestInit);
+    return response.json(); // parses JSON response into native JavaScript objects
+  } else {
+    return createServerPromise(url, data);
+  }
 }
 
-export const request = {
+async function createServerPromise<T>(url: string, data: any): Promise<ServerResponse<T>> {
+  const api = await import(url);
+  return new Promise<ServerResponse<T>>((resolve) => {
+    const { req, res } = MainHTTPHandler.ctx;
+    const handler = new HTTPHandler(req, res, resolve);
+    api({ handler, data });
+  });
+}
+
+export const rest = {
   get,
   post,
   put,
   patch,
   delete: del,
 };
-export const rest = request;
-export default request;
+
+export default rest;

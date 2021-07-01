@@ -4,7 +4,7 @@ import { Chat } from "components/reroll/play";
 
 import { GameServer } from "client/play";
 import { observer } from "mobx-react-lite";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { useRouter } from "next/router";
 
 const gameServer = new GameServer();

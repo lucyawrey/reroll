@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { Dispatch } from "react";
 import { ImageList, LinkImageForm, ListFormat } from "components/reroll/library/images";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { ImageDocument, UserDocument } from "types/documents";
 import { UploadImageForm } from "./UploadImage";
 import { ImageManager } from "client/library";

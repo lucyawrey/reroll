@@ -7,7 +7,7 @@ import React from "react";
 import { getSession, requireClientLogin } from "utilities/auth";
 import { getClient } from "utilities/db";
 import { query as q } from "faunadb";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { read } from "utilities/objects";
 import { ImageSelectionWrapper } from "components/reroll/library/images/ImageSelectionWrapper";
 import { ImageManager } from "client/library";

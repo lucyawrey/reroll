@@ -3,7 +3,7 @@ import { Button, Col, Row } from "components/style";
 import { Formik, Form as FormikForm } from "formik";
 import React from "react";
 import { Card } from "react-bootstrap";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 
 interface UploadImageModalProps {
   modal: boolean;

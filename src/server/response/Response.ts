@@ -1,8 +1,10 @@
+import { ServerResponse } from "types/utilities";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Context } from "types/server";
 
 type RequestFunction = (req: NextApiRequest, res: NextApiResponse) => void;
 type PossibleMethods = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type AltResolver = (value: ServerResponse<any> | PromiseLike<ServerResponse<any>>);
 
 export class HTTPHandler {
   public GET?: RequestFunction;
@@ -11,14 +13,20 @@ export class HTTPHandler {
   public PATCH?: RequestFunction;
   public DELETE?: RequestFunction;
 
+  private altResolver: AltResolver | undefined;
+
   private req: NextApiRequest;
   private res: NextApiResponse;
   public ctx: Context;
 
-  constructor(req: NextApiRequest, res: NextApiResponse) {
+  constructor(req: NextApiRequest, res: NextApiResponse, altResolver?: AltResolver) {
     this.req = req;
     this.res = res;
     this.ctx = { req, res };
+
+    if (altResolver) {
+      this.altResolver = altResolver;
+    }
   }
 
   public async handle(): Promise<void> {
@@ -30,7 +38,7 @@ export class HTTPHandler {
 
     try {
       // Handles initializing the database
-      // TODO - ensure that we can access the user DB 
+      // TODO - ensure that we can access the user DB;
       //  seperately with or without disconnecting
       // databaseSetup();
 
@@ -51,7 +59,7 @@ export class HTTPHandler {
           error.message
         );
       } else {
-        console.error(error)
+        console.error(error);
         this.returnError(
           500,
           `An unexpected error occured. If this continues occuring, please contact our staff!`
@@ -66,7 +74,11 @@ export class HTTPHandler {
       data: data,
       message: "",
     };
-    this.res.status(200).json(responseBody);
+    if (!this.altResolver) {
+      this.res.status(200).json(responseBody);
+    } else {
+      this.altResolver(responseBody);
+    }
   }
 
   public returnError(code: number, message: string): void {
@@ -75,7 +87,12 @@ export class HTTPHandler {
       data: {},
       message,
     };
-    this.res.status(code).json(responseBody);
+    if (!this.altResolver) {
+      this.res.status(code).json(responseBody);
+    } else {
+      this.altResolver(responseBody);
+    }
   }
 }
+
 export default HTTPHandler;

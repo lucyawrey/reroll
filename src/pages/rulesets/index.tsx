@@ -2,7 +2,7 @@ import { Form, Formik } from "formik";
 import React from "react";
 import { Button, Card, Col, FormGroup, FormLabel, Row } from "react-bootstrap";
 import { ContextMenu, ErrorMessage, fetchContentResponse, IndexTable, Input, Modal, Page } from "components/design";
-import request from "utilities/request";
+import rest from "utilities/rest";
 import { MdBlock, MdBuild, MdInfo } from "react-icons/md";
 import { ContextMenuBuilder, TableBuilder } from "utilities/design";
 import { TableComponentProps } from "types/design";
@@ -41,7 +41,7 @@ async function queryRulesets(
     skip: skip,
     sort: sortBy,
   }};
-  const res = await request.post<any>("/api/rulesets", body);
+  const res = await rest.post<any>("/api/rulesets", body);
   if (res.success) { return { content: res.data.rulesets, count: res.data.rulesetCount }; }
   return { content: [], count: 0 };
 }
@@ -59,7 +59,7 @@ function CreateRulesetForm() {
    * @param values The values from the form to submit
    */
   async function onSubmit(values: Record<string, string>) {
-    const response = await request.put<{ ruleset: any }>(
+    const response = await rest.put<{ ruleset: any }>(
       "/api/rulesets",
       values
     );
@@ -192,7 +192,7 @@ export default function Rulesets({ initialRulesets, rulesetCount }: RulesetProps
 }
 
 Rulesets.getInitialProps = async () => {
-  const res = await request.post<FetchRulesetsData>(
+  const res = await rest.post<FetchRulesetsData>(
     "/api/rulesets", { options: { limit: initialPerPage, sort: initialSortBy } }
   );
   return { initialRulesets: res.data.rulesets, rulesetCount: res.data.rulesetCount };

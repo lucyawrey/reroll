@@ -2,7 +2,7 @@ import React from "react";
 import { Page } from "components/design";
 import { LibraryImageList, ListFormat, StorageUsage } from "components/reroll/library";
 import { StorageTypeEnum } from "types/enums/storageType";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { NextPageContext } from "next";
 import { ImageManager } from "client/library/imageManager";
 

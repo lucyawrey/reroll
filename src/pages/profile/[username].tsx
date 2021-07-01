@@ -1,7 +1,7 @@
 import React, { Dispatch } from "react";
 import { Checkbox, Input, Modal, Page, TextArea } from "components/design";
 import { NextPageContext } from "next";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 import { getSession } from "utilities/auth";
 import { UserDocument } from "types/documents";
 import { Formik, Form as FormikForm } from "formik";

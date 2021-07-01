@@ -4,7 +4,7 @@ import { CampaignDocument, ImageDocument } from "types/documents";
 import { FaunaRef } from "types/fauna";
 import { getClient } from "utilities/db";
 import { fromFauna, toFaunaRef } from "utilities/fauna";
-import { rest } from "utilities/request";
+import rest from "utilities/rest";
 
 /**
  * Manages the state and massive list of images, allowing for fast
