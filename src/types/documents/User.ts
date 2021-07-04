@@ -1,6 +1,15 @@
 import { CoreDocument } from "types/documents";
 import { ImageDocument } from "./assets";
 
+export interface SessionUser {
+  id: string,
+  collection: "users",
+  ref: FaunaRef | Expr,
+  roles: string[];
+  isLoggedIn: boolean;
+}
+
+
 /**
  * The user object for the user's core data for use with NextAuth
  */

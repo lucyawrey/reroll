@@ -1,23 +1,24 @@
-import { NextApiRequest } from "next";
-import { getMyUser, requireLogin } from "server/auth";
+import { requireLogin } from "server/auth";
 import { UserLogic } from "server/logic";
-import { HTTPHandler } from "server/response";
-import { createEndpoint } from "server/utilities";
+import { buildApi } from "server/utilities";
+import { Context } from "types/utilities";
 
 /**
  * Updates a single profile image for the current user
  * @param this The handler class calling this function
  * @param req The request to the server
  */
-async function updateProfileImage(this: HTTPHandler, req: NextApiRequest) {
-  const myUser = getMyUser(req);
+async function _updateProfileImage(data: any, ctx: Context) {
+  const myUser = ctx.session.user;
   requireLogin(myUser);
 
   const user = await UserLogic.fetchUser(myUser, myUser);
-  if (!user) { this.returnError(404, "User not found."); return; }
-  const newImageAndUser = await UserLogic.updateUserImage(user, req.body, myUser);
+  if (!user) throw { code: 404, message: "User not found." };
+  const newImageAndUser = await UserLogic.updateUserImage(user, data, myUser);
 
-  this.returnSuccess({ user: newImageAndUser.user, image: newImageAndUser.image });
+  return { user: newImageAndUser.user, image: newImageAndUser.image };
 }
 
-export default createEndpoint({PATCH: updateProfileImage});
+const [ endpoint, updateProfileImage ] = buildApi("/api/profile/images", {PATCH: _updateProfileImage});
+export { updateProfileImage };
+export default endpoint;

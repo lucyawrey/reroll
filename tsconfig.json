@@ -35,7 +35,7 @@
       "types/*": ["src/types/*"],
       "utilities": ["src/utilities"],
       "utilities/*": ["src/utilities/*"],
-      "/api/*": ["src/pages/api/*"],
+      "api/*": ["src/pages/api/*"],
     }
   },
   "exclude": [

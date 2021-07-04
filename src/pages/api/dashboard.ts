@@ -1,7 +1,6 @@
 import { NextApiRequest } from "next";
-import { HTTPHandler } from "server/response";
 import { CampaignLogic } from "server/logic";
-import { createEndpoint } from "server/utilities";
+import { buildApi } from "server/utilities";
 import { getMyUser, requireLogin } from "server/auth";
 
 /**
@@ -9,11 +8,13 @@ import { getMyUser, requireLogin } from "server/auth";
  * @param this The Handler class calling this function
  * @param req The request to the server
  */
-async function getDashboardPage(this: HTTPHandler, req: NextApiRequest) {
+async function _getDashboard(data: any, ctx: Context) {
   const myUser = getMyUser(req);
   requireLogin(myUser);
   const campaigns = await CampaignLogic.fetchMyCampaigns(myUser, { size: 6 });
   this.returnSuccess({ campaigns: campaigns });
 }
 
-export default createEndpoint({GET: getDashboardPage});
+const [ endpoint, getDashboard ] = buildApi("/api/dashboard", {GET: _getDashboard});
+export { getDashboard };
+export default endpoint;

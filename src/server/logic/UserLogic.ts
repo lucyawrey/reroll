@@ -4,7 +4,7 @@ import { FaunaDocument, FaunaRef } from "types/fauna";
 import { toFaunaRef, fromFauna } from "utilities/fauna";
 import { getServerClient } from "utilities/db";
 import { CoreModelLogic, ImageLogic } from "server/logic";
-import { DocumentReference, MyUserDocument } from "./CoreModelLogic";
+import { DocumentReference, SessionUser } from "./CoreModelLogic";
 import { isAdmin, isOwner } from "./security";
 import { fetchImageToSet } from "./ImageLogic";
 
@@ -36,7 +36,7 @@ const updateFields = [
  * @param myID The ID of the current user
  * @param roles The roles of the current user, if any
  */
-export async function fetchUser(ref: DocumentReference, myUser: MyUserDocument): Promise<UserDocument | null> {
+export async function fetchUser(ref: DocumentReference, myUser: SessionUser): Promise<UserDocument | null> {
   const client = getServerClient();
   const user = await CoreModelLogic.fetchByRef(ref);
   if (!user) { return null; }
@@ -51,7 +51,7 @@ export async function fetchUser(ref: DocumentReference, myUser: MyUserDocument):
  * @param myID The current user's id
  * @param roles The current user's roles
  */
-export async function fetchUserByUsername(username: string, myUser: MyUserDocument): Promise<UserDocument | null> {
+export async function fetchUserByUsername(username: string, myUser: SessionUser): Promise<UserDocument | null> {
   const index = await CoreModelLogic.fetchByIndex(
     `users_by_username`,
     [username],
@@ -70,7 +70,7 @@ export async function fetchUserByUsername(username: string, myUser: MyUserDocume
  * @param roles The current user's roles
  * @TODO - combine the user id and roles into a single object? Good idea- do later
  */
-export async function fetchUsersFromList(refs: DocumentReference[], myUser: MyUserDocument): Promise<UserDocument[]> {
+export async function fetchUsersFromList(refs: DocumentReference[], myUser: SessionUser): Promise<UserDocument[]> {
   const users: Promise<UserDocument>[] = [];
   refs.forEach((ref: DocumentReference) => {
     const user = fetchUser(ref, myUser);
@@ -88,7 +88,7 @@ export async function fetchUsersFromList(refs: DocumentReference[], myUser: MyUs
  * @param myID The id of the current user, to determine access rights
  * @param roles The roles of the current user, to determine access rights
  */
-export async function updateUser(user: UserDocument, myUser: MyUserDocument): Promise<UserDocument> {
+export async function updateUser(user: UserDocument, myUser: SessionUser): Promise<UserDocument> {
   const updatedUser = await CoreModelLogic.updateOne(user as Record<string, unknown>, updateFields, myUser, canUpdate);
 
   if (isOwner(user, myUser)) { return updatedUser; }
@@ -100,7 +100,7 @@ export async function updateUser(user: UserDocument, myUser: MyUserDocument): Pr
  * @param user The user document to check updatability
  * @param myUser The current user object attempting to update
  */
-function canUpdate(user: UserDocument, myUser: MyUserDocument): boolean {
+function canUpdate(user: UserDocument, myUser: SessionUser): boolean {
   if (isAdmin(myUser)) { return true; }
   if (isOwner(user, myUser)) {
     return true;
@@ -114,7 +114,7 @@ function canUpdate(user: UserDocument, myUser: MyUserDocument): boolean {
  * @param body The body of request to update the user image.
  * @param myUser The current user
  */
-export async function updateUserImage(user: UserDocument, body: any, myUser: MyUserDocument): Promise<any> {
+export async function updateUserImage(user: UserDocument, body: any, myUser: SessionUser): Promise<any> {
   if (!canUpdate(user, myUser)) {
     throw { code: 403, message: "You do not have permission to update this user's profile image." };
   }

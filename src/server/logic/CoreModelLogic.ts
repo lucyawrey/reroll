@@ -25,14 +25,6 @@ interface RefRef {
 
 export type DocumentReference = IdCollectionRef |& RefRef;
 
-export interface MyUserDocument {
-  id: string,
-  collection: "users",
-  ref: FaunaRef | Expr,
-  roles: string[];
-  isLoggedIn: boolean;
-}
-
 /**
  * Fetches a document by reference and converts it into a JS object.
  * @param ref A reference document
@@ -118,7 +110,7 @@ export async function createOne(
   collection: string,
   doc: AnyDocument,
   allowedFields: string[],
-  myUser: MyUserDocument,
+  myUser: SessionUser,
 ): Promise<AnyDocument> {
 
   const faunaDoc = toFauna(trimRestrictedFields(doc as Record<string, unknown>, allowedFields));
@@ -151,8 +143,8 @@ export async function createOne(
 export async function updateOne(
   doc: AnyDocument,
   allowedFields: string[],
-  myUser: MyUserDocument,
-  canUpdate: (doc: AnyDocument, myUser: MyUserDocument) => boolean
+  myUser: SessionUser,
+  canUpdate: (doc: AnyDocument, myUser: SessionUser) => boolean
 ): Promise<AnyDocument> {
   const client = getServerClient();
 
@@ -185,8 +177,8 @@ export async function updateOne(
  */
 export async function deleteOne(
   docRef: DocumentReference,
-  myUser: MyUserDocument,
-  canDelete: (doc: AnyDocument, myUser: MyUserDocument) => boolean
+  myUser: SessionUser,
+  canDelete: (doc: AnyDocument, myUser: SessionUser) => boolean
 ): Promise<boolean> {
   const client = getServerClient();
   const ref = toFaunaRef(docRef);

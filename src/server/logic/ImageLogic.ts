@@ -1,7 +1,7 @@
 import { Expr } from "faunadb";
 import { ImageDocument } from "types/documents";
 import { CoreModelLogic } from "server/logic";
-import { DocumentReference, MyUserDocument, PaginationOptions } from "./CoreModelLogic";
+import { DocumentReference, SessionUser, PaginationOptions } from "./CoreModelLogic";
 
 const createFields = [
   "name",
@@ -15,7 +15,7 @@ const createFields = [
  * @param ref The reference of the document to fetch
  * @param myUser The current user
  */
-export async function fetchImage(ref: DocumentReference, myUser: MyUserDocument): Promise<ImageDocument | null> {
+export async function fetchImage(ref: DocumentReference, myUser: SessionUser): Promise<ImageDocument | null> {
   const image = CoreModelLogic.fetchByRef(ref);
   // TODO - security
   return image;
@@ -26,7 +26,7 @@ export async function fetchImage(ref: DocumentReference, myUser: MyUserDocument)
  * @param myUser The user to fetch images for
  * @param options The pagination options
  */
-export async function fetchMyImages(myUser: MyUserDocument, options: PaginationOptions): Promise<ImageDocument[]> {
+export async function fetchMyImages(myUser: SessionUser, options: PaginationOptions): Promise<ImageDocument[]> {
   if (!options.size) { options.size = 100; }
   const images = await CoreModelLogic.fetchByIndex(
     "my_images_asc",
@@ -43,7 +43,7 @@ export async function fetchMyImages(myUser: MyUserDocument, options: PaginationO
  * @param method The method by which to create an image. Currently "link" and "upload".
  * @param myUser The current user attempting to create this image
  */
-export async function createImageFromMethod(image: ImageDocument, method: string, myUser: MyUserDocument): Promise<ImageDocument> {
+export async function createImageFromMethod(image: ImageDocument, method: string, myUser: SessionUser): Promise<ImageDocument> {
   switch(method) {
     case "link":
       return await createExternalImage(image, myUser);
@@ -61,7 +61,7 @@ export async function createImageFromMethod(image: ImageDocument, method: string
  * @param method The method to perform the actions for
  * @param myUser The current user
  */
-export async function fetchImageToSet(image: ImageDocument, method: string, myUser: MyUserDocument): Promise<ImageDocument> {
+export async function fetchImageToSet(image: ImageDocument, method: string, myUser: SessionUser): Promise<ImageDocument> {
   let fetchedImage: ImageDocument | null;
   switch(method) {
     case "link":
@@ -89,7 +89,7 @@ export async function fetchImageToSet(image: ImageDocument, method: string, myUs
  * @param image The image to create
  * @param myUser The current user attempting to create an image
  */
-export async function createExternalImage(image: ImageDocument, myUser: MyUserDocument): Promise<ImageDocument> {
+export async function createExternalImage(image: ImageDocument, myUser: SessionUser): Promise<ImageDocument> {
   const fields = createFields.concat(["isExternal", "sizeInBytes"]);
   image.isExternal = true;
   image.sizeInBytes = 0;
@@ -101,7 +101,7 @@ export async function createExternalImage(image: ImageDocument, myUser: MyUserDo
  * @param ref The reference to the document to delete
  * @param myUser The current user attempting to delete an image
  */
-export async function deleteImage(ref: DocumentReference, myUser: MyUserDocument): Promise<boolean> {
+export async function deleteImage(ref: DocumentReference, myUser: SessionUser): Promise<boolean> {
   // TODO - handle uploaded image case
   return await CoreModelLogic.deleteOne(ref, myUser, canDelete);
 }
@@ -111,7 +111,7 @@ export async function deleteImage(ref: DocumentReference, myUser: MyUserDocument
  * @param image The image document that the user may be able to delete
  * @param myUser The current user
  */
-export function canDelete(image: ImageDocument, myUser: MyUserDocument): boolean {
+export function canDelete(image: ImageDocument, myUser: SessionUser): boolean {
   if ("admin" in myUser.roles) { return true; }
   if (myUser.id === image.ownedBy?.id) { return true; }
   return false;

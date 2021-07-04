@@ -3,7 +3,7 @@ import { Expr, query as q } from "faunadb";
 import { fromFauna } from "utilities/fauna";
 import { CampaignDocument, ImageDocument, UserDocument } from "types/documents";
 import { CoreModelLogic, ImageLogic } from "server/logic";
-import { DocumentReference, MyUserDocument, PaginationOptions } from "./CoreModelLogic";
+import { DocumentReference, SessionUser, PaginationOptions } from "./CoreModelLogic";
 import { isAdmin, isOwner } from "./security";
 
 // The different levels of access for a campaign
@@ -31,7 +31,7 @@ const allowedGuestFields: string[] = [];
  */
 export async function fetchCampaign(
   ref: DocumentReference,
-  myUser: MyUserDocument
+  myUser: SessionUser
 ): Promise<CampaignDocument | null> {
   let campaign = await CoreModelLogic.fetchByRef(ref);
   if (!campaign) { return null; }
@@ -48,7 +48,7 @@ export async function fetchCampaign(
  * @param roles The current user's roles
  */
 export async function fetchMyCampaigns(
-  myUser: MyUserDocument,
+  myUser: SessionUser,
   options: PaginationOptions
 ): Promise<CampaignDocument[]> {
   const campaigns = await CoreModelLogic.fetchByIndex(
@@ -67,7 +67,7 @@ export async function fetchMyCampaigns(
  * @param myID The owner ID
  * @param roles The roles of the user, if any
  */
-function determineAccessLevel(campaign: CampaignDocument, myUser: MyUserDocument): CampaignAccessLevels {
+function determineAccessLevel(campaign: CampaignDocument, myUser: SessionUser): CampaignAccessLevels {
   if ("ADMIN" in myUser.roles) { return CampaignAccessLevels.ADMIN; }
 
   if (campaign.ownedBy && campaign.ownedBy.id === myUser.id) { return CampaignAccessLevels.OWNER; }
@@ -100,7 +100,7 @@ export function trimRestrictedFields(campaign: CampaignDocument, accessLevel: Ca
  * @param campaign 
  * @param myUser 
  */
-function canUpdate(campaign: CampaignDocument, myUser: MyUserDocument) {
+function canUpdate(campaign: CampaignDocument, myUser: SessionUser) {
   if (isAdmin(myUser)) { return true; }
   if (isOwner(campaign, myUser)) { return true; } 
   return false;
@@ -113,7 +113,7 @@ function canUpdate(campaign: CampaignDocument, myUser: MyUserDocument) {
  * @param body The body of the request to update the banner. Contains an image document (image) and method (string)
  * @param myUser The current user making changes
  */
-export async function updateBanner(campaign: CampaignDocument, body: any, myUser: MyUserDocument) {
+export async function updateBanner(campaign: CampaignDocument, body: any, myUser: SessionUser) {
   if (!canUpdate(campaign, myUser)) {
     throw { code: 403, message: "You do not have permission to update this campaign's banner image." };
   }

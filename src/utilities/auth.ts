@@ -5,6 +5,7 @@ import { destroyCookie, parseCookies, setCookie } from "nookies";
 import { useEffect, useState } from "react";
 import { getClient, updateClient } from "utilities/db";
 import { query as q } from "faunadb";
+import { User } from "types/user";
 
 export function signUp(username: string, email: string, password: string): void {
   fetch("/api/auth/signup", {
@@ -62,6 +63,10 @@ export function getSession(ctx?: CtxReq): any | null {
     return null;
   const session: any = JSON.parse(cookie);
   return session;
+}
+
+export function getUser(ctx?: CtxReq): {
+  
 }
 
 export async function authenticate(ctx?: CtxReq): Promise<any | null> {
